@@ -1,0 +1,190 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  background-color: #FBF6EA;
+  color: #20261F;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------- Template player (phone preview with per-scene transitions) ----------
+   Same look and the same eight transitions as the restaurant's original
+   "Influencer Video Template" file. Used by the dashboard template editor,
+   the customer's in-app edit place, and the submission viewer. */
+.tp-phone {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #111;
+  border: 5px solid #2E2420;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  perspective: 900px;
+}
+.tp-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  transition: transform 0.5s ease, opacity 0.45s ease, clip-path 0.5s ease, filter 0.45s ease;
+}
+.tp-media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.tp-fade { opacity: 0; transform: scale(1.02); }
+.tp-fade.tp-active { opacity: 1; transform: scale(1); }
+.tp-slide { transform: translateX(100%); }
+.tp-slide.tp-active { transform: translateX(0); }
+.tp-zoom { opacity: 0; transform: scale(0.4); }
+.tp-zoom.tp-active { opacity: 1; transform: scale(1); }
+.tp-flip { opacity: 0; transform: rotateY(85deg); }
+.tp-flip.tp-active { opacity: 1; transform: rotateY(0deg); }
+.tp-wipe { clip-path: inset(0 100% 0 0); }
+.tp-wipe.tp-active { clip-path: inset(0 0 0 0); }
+.tp-spin { opacity: 0; transform: rotate(14deg) scale(0.7); transition-timing-function: cubic-bezier(0.34, 1.4, 0.64, 1); }
+.tp-spin.tp-active { opacity: 1; transform: rotate(0) scale(1); }
+.tp-rise { transform: translateY(100%); }
+.tp-rise.tp-active { transform: translateY(0); }
+.tp-blur { opacity: 0; filter: blur(14px); }
+.tp-blur.tp-active { opacity: 1; filter: blur(0); }
+
+
+/* Customer hero: the thin autoplay bar under the dish card */
+@keyframes lh-bar {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.lh-bar {
+  transform-origin: left center;
+  animation: lh-bar var(--lh-dur, 5200ms) linear forwards;
+}
+
+/* =====================================================================
+   Glass look (cream + leaf green), used by the client dashboard, the
+   login pages and the customer menu. Scope classes:
+     .gd  client dashboard      .gv  customer view
+   Inner cards stay lightly see-through (no extra blur, so it stays fast);
+   the big outer panels do the frosted blur.
+   ===================================================================== */
+.glass {
+  background: rgba(255, 255, 255, 0.46);
+  -webkit-backdrop-filter: blur(22px) saturate(1.35);
+  backdrop-filter: blur(22px) saturate(1.35);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 10px 40px rgba(58, 74, 38, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+.glass-strong {
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: blur(26px) saturate(1.4);
+  backdrop-filter: blur(26px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 24px 70px rgba(40, 56, 28, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+/* the soft moving background behind everything */
+.aurora { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: linear-gradient(160deg, #f9f4ea 0%, #f3efe0 45%, #e8f0df 100%); }
+.aurora i { position: absolute; border-radius: 9999px; filter: blur(70px); opacity: 0.75; will-change: transform; }
+.aurora i:nth-child(1) { width: 46vmax; height: 46vmax; left: -12vmax; top: -14vmax; background: #b9d99a; animation: aurora-a 26s ease-in-out infinite alternate; }
+.aurora i:nth-child(2) { width: 40vmax; height: 40vmax; right: -12vmax; top: 10vmax; background: #f1d9a0; animation: aurora-b 32s ease-in-out infinite alternate; }
+.aurora i:nth-child(3) { width: 38vmax; height: 38vmax; left: 18vmax; bottom: -20vmax; background: #8fc27a; opacity: 0.55; animation: aurora-a 38s ease-in-out infinite alternate-reverse; }
+@keyframes aurora-a { to { transform: translate3d(8vmax, 6vmax, 0) scale(1.12); } }
+@keyframes aurora-b { to { transform: translate3d(-9vmax, 7vmax, 0) scale(1.08); } }
+
+/* page change: the panel blurs in, then its cards rise one after another */
+@keyframes view-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+/* the blur "wipe" is a see-through sheet that clears away, never a filter on the content itself */
+@keyframes veil-out {
+  0% { opacity: 1; -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+  100% { opacity: 0; -webkit-backdrop-filter: blur(0); backdrop-filter: blur(0); }
+}
+.veil {
+  position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 5;
+  background: rgba(249, 244, 234, 0.35);
+  animation: veil-out 0.75s cubic-bezier(0.22, 0.9, 0.3, 1) both;
+}
+.veil-fixed { position: fixed; border-radius: 0; z-index: 15; }
+@media (prefers-reduced-motion: reduce) { .veil { display: none; } }
+@keyframes glass-rise {
+  0% { opacity: 0; transform: translateY(14px) scale(0.99); }
+  100% { opacity: 1; transform: none; }
+}
+.view-in { animation: view-in 0.6s cubic-bezier(0.22, 0.9, 0.3, 1) both; }
+.rise > * { animation: glass-rise 0.55s cubic-bezier(0.22, 0.9, 0.3, 1) both; }
+.rise > *:nth-child(1) { animation-delay: 0.08s; }
+.rise > *:nth-child(2) { animation-delay: 0.14s; }
+.rise > *:nth-child(3) { animation-delay: 0.20s; }
+.rise > *:nth-child(4) { animation-delay: 0.26s; }
+.rise > *:nth-child(5) { animation-delay: 0.32s; }
+.rise > *:nth-child(6) { animation-delay: 0.38s; }
+.rise > *:nth-child(n+7) { animation-delay: 0.44s; }
+
+/* dashboard + customer view: turn the existing white cards into frosted glass */
+.gd .bg-white, .gv .bg-white {
+  background-color: rgba(255, 255, 255, 0.58);
+  border-color: rgba(255, 255, 255, 0.8);
+}
+.gd .bg-paper, .gv .bg-paper, .gd .bg-cream, .gv .bg-cream { background-color: rgba(249, 244, 234, 0.5); }
+.gd .border-ink\/10, .gv .border-ink\/10, .gd .border-ink\/15, .gv .border-ink\/15 { border-color: rgba(60, 74, 40, 0.14); }
+.gd input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), .gd select, .gd textarea,
+.gv input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), .gv select, .gv textarea {
+  background-color: rgba(255, 255, 255, 0.7);
+}
+.gd input:focus, .gd select:focus, .gd textarea:focus, .gv input:focus, .gv textarea:focus {
+  outline: none; border-color: #14641e; box-shadow: 0 0 0 3px rgba(20, 100, 30, 0.14);
+}
+/* pop-up windows should read clearly: a stronger frost */
+.gd .fixed > .bg-paper, .gd .fixed > .bg-white, .gv .fixed > .bg-paper, .gv .fixed > .bg-white {
+  background-color: rgba(250, 247, 238, 0.82);
+  -webkit-backdrop-filter: blur(26px) saturate(1.3);
+  backdrop-filter: blur(26px) saturate(1.3);
+}
+/* the dashboard's green accents use the leaf green; red stays red for warnings and badges */
+.gd .bg-sprout { background-color: #14641e; }
+.gd .hover\:bg-sprout-dark:hover { background-color: #0e4a16; }
+.gd .text-sprout-dark { color: #0e4a16; }
+.gd .bg-ink { background-color: #1f3a1e; }
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora i, .view-in, .rise > * { animation: none !important; }
+}
+
+/* children of the current tab's root rise in one after another */
+.rise-deep > * > * { animation: glass-rise 0.55s cubic-bezier(0.22, 0.9, 0.3, 1) both; }
+.rise-deep > * > *:nth-child(1) { animation-delay: 0.10s; }
+.rise-deep > * > *:nth-child(2) { animation-delay: 0.17s; }
+.rise-deep > * > *:nth-child(3) { animation-delay: 0.24s; }
+.rise-deep > * > *:nth-child(4) { animation-delay: 0.31s; }
+.rise-deep > * > *:nth-child(n+5) { animation-delay: 0.38s; }
+@media (prefers-reduced-motion: reduce) { .rise-deep > * > * { animation: none !important; } }
+
+/* pop-up windows: frosted, but solid enough that the page behind never competes with the text */
+.glass-modal {
+  background: rgba(250, 247, 238, 0.92);
+  -webkit-backdrop-filter: blur(30px) saturate(1.3);
+  backdrop-filter: blur(30px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 30px 80px rgba(30, 44, 22, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* hide scrollbars on swipe rows and the dashboard icon rail (still scrolls) */
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
